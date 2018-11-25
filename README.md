@@ -48,36 +48,36 @@ The program accepts the following keys.
 
 | Key | Function |
 |:--------:| -------- |
-| 'h' or 'H' | Hide one image inside the current image (need to know the filename and the number of bits). |
-| 'e' or 'E' | Extract the hidden image from the current image (need to know the number of bits used for hiding). |
-| 'r' or 'R' | Revert to the initial image. |
-| 'w' or 'W' | Save the current displayed image to the disk. |
-| 'q' or 'Q' or Esc | Quit the program. |
+| 'H' or 'h' | Hide one image inside the current image (need to know the filename and the number of bits). |
+| 'E' or 'e' | Extract the hidden image from the current image (need to know the number of bits used for hiding). |
+| 'R' or 'r' | Revert to the initial image. |
+| 'W' or 'w' | Save the current displayed image to the disk. |
+| 'Q' or 'q' or Esc | Quit the program. |
 
 ## **Results**
 Here are two images, and their dimensions are 300\*300 and 225\*225 respectively. We are going to hide the right image inside the left one.
 
 | Lenna | Clemson Tiger |
 |-------------|--------|
-| ![Lenna](Lenna.png)| ![Clemson Tiger](clemson_tiger.png) |
+| ![Lenna](./images/Lenna.png)| ![Clemson Tiger](./images/clemson_tiger.png) |
 
 ### **Use 3 bits**
 
 | Merged Image | Extracted Image |
 |:------------:|:---------------:|
-| ![Merged 3-bit image](test1.png) | ![Extracted 3-bit image](test1-out.png) |
+| ![Merged 3-bit image](./results/test1.png) | ![Extracted 3-bit image](./results/test1-out.png) |
 
 ### **Use 4 bits**
 
 | Merged Image | Extracted Image |
 |:------------:|:---------------:|
-| ![Merged 4-bit image](test2.png) | ![Extracted 4-bit image](test2-out.png) |
+| ![Merged 4-bit image](./results/test2.png) | ![Extracted 4-bit image](./results/test2-out.png) |
 
 ### **Use 5 bits**
 
 | Merged Image | Extracted Image |
 |:------------:|:---------------:|
-| ![Merged 5-bit image](test3.png) | ![Extracted 5-bit image](test3-out.png) |
+| ![Merged 5-bit image](./results/test3.png) | ![Extracted 5-bit image](./results/test3-out.png) |
 
 
 What if the dimension of the image to hide is larger than the cover image?
@@ -85,40 +85,33 @@ we now have a new cover image shown below whose dimension is 400\*274, and we wa
 
 | Waves |
 |:-----:|
-| ![New cover image](waves.png) |
+| ![New cover image](./images/waves.png) |
 
 ### **Use 3 bits**
 
 | Merged Image | Extracted Image |
 |:------------:|:---------------:|
-| ![Merged 3-bit image](test4.png) | ![Extracted 3-bit image](test4-out.png) |
+| ![Merged 3-bit image](./results/test4.png) | ![Extracted 3-bit image](./results/test4-out.png) |
 
 ### **Use 4 bits**
 
 | Merged Image | Extracted Image |
 |:------------:|:---------------:|
-| ![Merged 4-bit image](test5.png) | ![Extracted 3-bit image](test5-out.png) |
+| ![Merged 4-bit image](./results/test5.png) | ![Extracted 3-bit image](./results/test5-out.png) |
 
 ### **Use 5 bits**
 
 | Merged Image | Extracted Image |
 |:------------:|:---------------:|
-| ![Merged 5-bit image](test6.png) | ![Extracted 5-bit image](test6-out.png) |
+| ![Merged 5-bit image](./results/test6.png) | ![Extracted 5-bit image](./results/test6-out.png) |
 
 The program works as expected when the cover image contains complex colors and the user uses less than or equal to 4 bits to conceal the image.
 
-## More Examples
-
-| Merged Image | Extracted Image |
-|:------------:|:---------------:|
-| ![Example 1](more1.png) | ![Extracted Example 1](more1-out.png) |
-| ![Example 2](more2.png) | ![Extracted Example 2](more2-out.png) |
-
 
 ## Known Issues
-The program can works well only with the lossless formats, e.g., PNG, BMP. If we use a lossy format to save the merged image, the extracted image would become a mess. An example is given below.
+The program can work well only with the lossless formats, e.g., PNG, BMP. If we use a lossy format to save the merged image, the extracted image would become a mess. An example is given below.
 
-![A messy image](test-out.jpg)
+![A messy image](./results/mess.jpg)
 
 
 [1]: https://en.wikipedia.org/wiki/Steganography
