@@ -1,7 +1,24 @@
 /*
 	Final Project - Image Hiding 
 
-	CPSC 6040		Guoxi Liu		11/15/2018
+	The program reads an image from the terminal argument.
+	
+	If the user presses 'h' key, the program will ask the user to 
+	type in the filename of the image to hide and the number of bits 
+	to be used for concealing the image. If the dimension of the new image 
+	is larger than the cover image, the program will rescale it to fit
+	the size of the cover image. 
+
+	If the user presses 'e' key, the program will ask the user to 
+	type in the bits used for hiding, and then it will extract the  
+	hidden image from the given image. 
+
+	If the user presses 'r' key, the program will display the original image. 
+
+	If the user presses 'w' key, the program will save current displayed 
+	image to the disk.
+
+	CPSC 6040		Guoxi Liu		11/25/2018
 
 */
 
@@ -54,6 +71,8 @@ void read_image(char* filename, image &img) {
 	}
 
 	const ImageSpec &spec = in->spec();
+	cout << "Reading image file " << filename << " ..." << endl;
+	cout << "Image width: " << spec.width << ", height: " << spec.height << ", channels: " << spec.nchannels << endl;
 	
 	// Read image data into defined structure.
 	img.xres = spec.width;
@@ -88,8 +107,7 @@ void read_image(char* filename, image &img) {
 				img.pixels[(row*img.xres+col)*4+4-1] = 255;
 
 	// Print some useful information of the image file.
-	cout << "Read image file " << filename << " successfully!" << endl;
-	cout << "Image width: " << img.xres << ", height: " << img.yres << ", channels: " << spec.nchannels << endl << endl;
+	cout << "Finished reading image file " << filename << "!" << endl << endl;
 
 	// Close the image file and release the memory.
 	in->close();
@@ -139,7 +157,7 @@ void write_image(char* filename, const image &img) {
 		return;
 	}
 	
-	cout << "Write image " << filename << " successfully!" << endl << endl;
+	cout << "Finished writing image file " << filename << "!" << endl << endl;
 
 	// Release the memory to avoid memory leaks.
 	ImageOutput::destroy(out);
@@ -209,31 +227,58 @@ unsigned char extract_pixel(unsigned char pixel, int n) {
 }
 
 /**
+ * Rescale the hidden image to fit the cover image.
+ */ 
+void rescale(image &coverImage, image &hiddenImage) {
+	float ratio1 = (float)coverImage.xres / hiddenImage.xres;
+	float ratio2 = (float)coverImage.yres / hiddenImage.yres;
+	float ratio = ratio1 < ratio2 ? ratio1 : ratio2;
+	float invertRatio = 1.0 / ratio;
+	
+	// Create a temporary image struct for rescaling.
+	image tmpImage(ratio*hiddenImage.xres, ratio*hiddenImage.yres);
+	
+	for (int y = 0; y < tmpImage.yres; y++) {
+		for (int x = 0; x < tmpImage.xres; x++) {
+			int u = x * invertRatio;
+			int v = y * invertRatio;
+			int position1 = (y*tmpImage.xres+x)*4;
+			int position2 = (v*hiddenImage.xres+u)*4;
+			for (int ch = 0; ch < 4; ch++) 
+				tmpImage.pixels[position1+ch] = hiddenImage.pixels[position2+ch];
+		}
+	}
+
+	delete[] hiddenImage.pixels;
+	hiddenImage = tmpImage;
+}
+
+/**
  * Hide one image into a cover image.
  */
-void hide_image(image &img1, image &img2) {
-	if (img2.xres > img1.xres || img2.yres > img1.yres) {
-		cerr << "The dimension of cover image should be larger than the image to hide!" << endl;
-		exit(1);
+void hide_image(image &coverImage, image &hiddenImage) {
+	if (hiddenImage.xres > coverImage.xres || hiddenImage.yres > coverImage.yres) {
+		cout << "The dimension of the hidden image is larger than the cover image, and it will be rescaled!" << endl;
+		rescale(coverImage, hiddenImage);
 	}
 	
 	int num;
 	cout << ">> Please type in the number of bits you want to use: ";
 	cin >> num;
 
-	for (int row = 0; row < img2.yres; row++) {
-		for (int col = 0; col < img2.xres; col++) {
+	for (int row = 0; row < hiddenImage.yres; row++) {
+		for (int col = 0; col < hiddenImage.xres; col++) {
 			for (int ch = 0; ch < 4; ch++) {
-				int position1 = (row*img1.xres+col) * 4 + ch;
-				int position2 = (row*img2.xres+col) * 4 + ch;
-				img1.pixels[position1] = hide_pixel(img1.pixels[position1], img2.pixels[position2], num);
+				int position1 = (row*coverImage.xres+col) * 4 + ch;
+				int position2 = (row*hiddenImage.xres+col) * 4 + ch;
+				coverImage.pixels[position1] = hide_pixel(coverImage.pixels[position1], hiddenImage.pixels[position2], num);
 			}
 		}
 	}
 
 	// Save the width and height of the hidden image.
-	img1.pixels[0] = (unsigned char)((float)img2.xres/img1.xres * 255.0);
-	img1.pixels[1] = (unsigned char)((float)img2.yres/img1.yres * 255.0);
+	coverImage.pixels[0] = (unsigned char)((float)hiddenImage.xres/coverImage.xres * 255.0);
+	coverImage.pixels[1] = (unsigned char)((float)hiddenImage.yres/coverImage.yres * 255.0);
 
 	cout << "Finished hiding the image!" << endl << endl;
 }
@@ -241,21 +286,21 @@ void hide_image(image &img1, image &img2) {
 /**
  * Extract the hidden image from the merged image.
  */
-void extract_image(image &img1, image &img2) {
-	img2.xres = (int) (img1.pixels[0]/255.0 * img1.xres); 
-	img2.yres = (int) (img1.pixels[1]/255.0 * img1.yres);
-	img2.pixels = new unsigned char[img2.xres*img2.yres*4];
+void extract_image(image &coverImage, image &hiddenImage) {
+	hiddenImage.xres = (int) (coverImage.pixels[0]/255.0 * coverImage.xres); 
+	hiddenImage.yres = (int) (coverImage.pixels[1]/255.0 * coverImage.yres);
+	hiddenImage.pixels = new unsigned char[hiddenImage.xres*hiddenImage.yres*4];
 
 	int num;
 	cout << ">> Please type in the number of bits used: ";
 	cin >> num;
 
-	for (int row = 0; row < img2.yres; row++) {
-		for (int col = 0; col < img2.xres; col++) {
+	for (int row = 0; row < hiddenImage.yres; row++) {
+		for (int col = 0; col < hiddenImage.xres; col++) {
 			for (int ch = 0; ch < 4; ch++) {
-				int position1 = (row*img1.xres+col) * 4 + ch;
-				int position2 = (row*img2.xres+col) * 4 + ch;
-				img2.pixels[position2] = extract_pixel(img1.pixels[position1], num);
+				int position1 = (row*coverImage.xres+col) * 4 + ch;
+				int position2 = (row*hiddenImage.xres+col) * 4 + ch;
+				hiddenImage.pixels[position2] = extract_pixel(coverImage.pixels[position1], num);
 			}
 		}
 	}
@@ -303,10 +348,11 @@ void keyboard_func(unsigned char key, int x, int y) {
 			glutPostRedisplay();
 			break;
 
-		// 'R': revoke the operation and display the original image.
+		// 'R': undo the operation and revert to the original image.
 		case 'r':
 		case 'R':
 			newImg = image(oldImg);
+			glutReshapeWindow(newImg.xres, newImg.yres);
 			glutPostRedisplay();
 			break;
 
